@@ -91,3 +91,11 @@ def load_file(path_file):
     lines = [l.strip() for l in lines]
     return lines
 
+
+from os import listdir
+from os.path import isfile, join
+def load_all_files(path_folder):  
+    # load all files in a folder
+    files = [f for f in listdir(path_folder) if isfile(join(path_folder, f))]
+    return files
+

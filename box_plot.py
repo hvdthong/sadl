@@ -3,7 +3,7 @@ from keras.models import load_model, Model
 import argparse
 from keras import utils
 import numpy as np
-from utils import load_file
+from utils import load_file, load_all_files
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -21,18 +21,20 @@ def mnist_get_correct_and_incorrect_test_images(y_pred, y_true):
 
 def get_sa_for_correct_and_incorrect(sa_score, correct_index, incorrect_index):
     sa_score = [float(score) for score in sa_score]  # convert to float number
-    sa_score = [float(s)/max(sa_score) for s in sa_score]  # normalize list of numbers 
-    sa_correct = [sa_score[index] for index in correct_index]
-    sa_incorrect = [sa_score[index] for index in incorrect_index]    
+    # sa_score = [float(s)/max(sa_score) for s in sa_score]  # normalize list of numbers 
+    sa_correct = [sa_score[index] for index in correct_index if sa_score[index] < 5000]
+    sa_incorrect = [sa_score[index] for index in incorrect_index if sa_score[index] < 5000]    
     return np.array(sa_correct), np.array(sa_incorrect)
 
 
 def draw_box_plot(sa_correct, sa_incorrect, dataset, type_sa):    
     data = [sa_correct, sa_incorrect]
     fig, ax = plt.subplots()
-    ax.set_title('Suprise Adequacy')
+    ax.set_title('Suprise Adequacy Score of {} for {} dataset'.format(type_sa, dataset))
     ax.boxplot(data)
+    ax.set_xticklabels(['Correct', 'Incorrect'])
     plt.savefig('./figures/{}_{}.jpg'.format(type_sa, dataset))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -59,7 +61,9 @@ if __name__ == '__main__':
         # Load pre-trained model.
         # model = load_model("./model/model_mnist.h5")
         # model = load_model("./model/best_model_mnist.h5")
-        model = load_model('./model_tracking_ver1/model_improvement-47-0.99_mnist.h5')
+        # model = load_model('./model_tracking_ver1/model_improvement-47-0.99_mnist.h5')
+        # model = load_model('./model_tracking/model_improvement-10-0.99_mnist.h5')
+        model = load_model('./model_tracking/model_improvement-04-0.99_mnist.h5')
         model.summary()
 
         y_pred = model.predict(x_test)

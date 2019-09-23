@@ -77,7 +77,9 @@ if __name__ == "__main__":
         # Load pre-trained model.
         # model = load_model("./model/model_mnist.h5")
         # model = load_model("./model/best_model_mnist.h5")
-        model = load_model('./model_tracking/model_improvement-47-0.99_mnist.h5')
+        # model = load_model('./model_tracking/model_improvement-47-0.99_mnist.h5')
+        # model = load_model('./model_tracking/model_improvement-90-0.99_mnist.h5')
+        model = load_model('./model_tracking/model_improvement-04-0.99_mnist.h5')
         model.summary()
 
         # You can select some layers you want to test.
