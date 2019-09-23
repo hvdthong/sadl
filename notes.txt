@@ -1,0 +1,4 @@
+# model_tracking: keep the checkpoint of DL model
+# model_tracking_ver1: keep the checkpoint of DL model (but it isn't a new version)
+# sa: suprise adequacy score of instances in the test data
+# figures: boxplot of suprise adequacy score for instances which are correct and non-correct in test data

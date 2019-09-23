@@ -2,6 +2,7 @@ import numpy as np
 
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.metrics import roc_curve, auc
+import os
 
 
 class Colors:
@@ -67,6 +68,26 @@ def compute_roc_auc(test_sa, adv_sa, split=1000):
         probs_neg=probs[: (len(test_sa) - split)],
         probs_pos=probs[(len(test_sa) - split) :],
     )
-
     return auc_score
+
+
+def write_file(path_file, data):
+    split_path = path_file.split("/")
+    path_ = split_path[:len(split_path) - 1]
+    path_ = "/".join(path_)
+
+    if not os.path.exists(path_):
+        os.makedirs(path_)
+    with open(path_file, 'w') as out_file:
+        for line in data:
+            # write line to output file
+            out_file.write(str(line))
+            out_file.write("\n")
+        out_file.close()
+
+
+def load_file(path_file):
+    lines = list(open(path_file, "r").readlines())
+    lines = [l.strip() for l in lines]
+    return lines
 

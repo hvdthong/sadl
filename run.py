@@ -108,7 +108,7 @@ if __name__ == "__main__":
     x_test = (x_test / 255.0) - (1.0 - CLIP_MAX)
 
     if args.lsa:
-        test_lsa = fetch_lsa(model, x_train, x_test, "test", layer_names, args)
+        test_lsa = fetch_lsa(model, x_train, x_test, "test", layer_names, args)                
 
         target_lsa = fetch_lsa(model, x_train, x_target, args.target, layer_names, args)
         target_cov = get_sc(

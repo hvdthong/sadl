@@ -9,6 +9,7 @@ from keras.utils import np_utils
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from keras.regularizers import l2
+from keras.callbacks import ModelCheckpoint
 
 CLIP_MIN = -0.5
 CLIP_MAX = 0.5
@@ -76,22 +77,28 @@ def train(args):
         model.add(layer)
     model.add(Activation("softmax"))
 
-    print(model.summary())
+    print(model.summary())    
     model.compile(
         loss="categorical_crossentropy", optimizer="adadelta", metrics=["accuracy"]
     )
 
+    # checkpoint
+    filepath= "./model_tracking/model_improvement-{epoch:02d}-{val_acc:.2f}_%s.h5" % (args.d)
+    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [checkpoint]
+
     model.fit(
         x_train,
         y_train,
-        epochs=50,
+        epochs=500,
         batch_size=128,
         shuffle=True,
-        verbose=1,
+        verbose=0,
         validation_data=(x_test, y_test),
+        callbacks=callbacks_list,
     )
 
-    model.save("./model/model_{}.h5".format(args.d))
+    # model.save("./model/model_{}.h5".format(args.d))
 
 
 if __name__ == "__main__":
