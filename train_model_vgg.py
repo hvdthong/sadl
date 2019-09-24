@@ -100,7 +100,7 @@ def train(args):
     model.add(Activation("softmax"))
 
     print(model.summary())
-    opt = SGD(lr=0.001, decay=1e-4, momentum=0.9)
+    opt = SGD(lr=0.0001, decay=1e-6, momentum=0.9)
     model.compile(
         loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"]
     )

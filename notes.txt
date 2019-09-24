@@ -3,4 +3,5 @@
 # sa: suprise adequacy score of instances in the test data
 # figures: boxplot of suprise adequacy score for instances which are correct and non-correct in test data
 
-# best model for mnist dataset: ./model_tracking/model_improvement-04-0.99_mnist.h5  (0.977)
+# best model for mnist dataset: ./model_tracking/model_improvement-04-0.99_mnist.h5  (0.990)
+# best model for cifar dataset: ./model_tracking/cifar_model_improvement-496-0.87.h5  (0.873)
