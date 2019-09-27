@@ -88,7 +88,10 @@ if __name__ == "__main__":
         layer_names = ["activation_3"]
 
         # Load target set.
-        # x_target = np.load("./adv/adv_mnist_{}.npy".format(args.target))
+        x_target = np.load("./adv/adv_mnist_{}.npy".format(args.target))
+        print(x_target.shape)
+        print(x_test.shape)
+        exit()
 
     if args.d == 'cifar':
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
