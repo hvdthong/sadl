@@ -57,6 +57,36 @@ def find_best_threshold(y_score, y_pred, y_true, thresholds, times):
     return values_threshold, values_perfs
 
 
+def random_selected_adversarial(y, times, num_instances):
+    pos_index = [index for index in range(len(y)) if y[index] == 1]
+    neg_index = [index for index in range(len(y)) if y[index] == 0]
+
+    random_pos, random_neg = list(), list()
+    for t in range(times):
+        np.random.seed(t)
+        pos = np.random.choice(pos_index, num_instances, replace=False)
+        neg = np.random.choice(neg_index, num_instances, replace=False)
+        random_pos.append(list(pos))
+        random_neg.append(list(neg))    
+    return random_pos, random_neg
+
+
+def find_best_threshold_advesarial(y_score, y_pred, y_true, thresholds, times, num_instances):
+    true_score = get_correct_and_incorrect_instance(y_pred=y_pred, y_true=y_true)  # ground truth of correct and incorrect instances
+    random_pos, random_neg = random_selected_adversarial(y=true_score, times=times, num_instances=num_instances)
+    values_threshold, values_perfs = list(), list()
+    for t in range(times):
+        pos_index, neg_index = random_pos[t], random_neg[t]
+        all_index = pos_index + neg_index
+        time_sa_score = [y_score[index] for index in all_index]
+        time_true_score = [true_score[index] for index in all_index]
+        prcs, rcs, perfs, new_threshold = select_best_result(y_score=time_sa_score, y_true=time_true_score, thresholds=thresholds)
+        max_index = perfs.index(max(perfs))
+        values_threshold.append(new_threshold[max_index])
+        values_perfs.append(perfs[max_index])
+    return values_threshold, values_perfs
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--d", "-d", help="Dataset", type=str, default="mnist")
@@ -66,6 +96,9 @@ if __name__ == '__main__':
     parser.add_argument(
         "--dsa", "-dsa", help="Distance-based Surprise Adequacy", action="store_true"
     )
+    parser.add_argument(
+        "--adv", "-adv", help="Calculate SA score of adversarial examples", action="store_true"
+    )
 
     args = parser.parse_args()
     assert args.d in ["mnist", "cifar"], "Dataset should be either 'mnist' or 'cifar'"
@@ -73,65 +106,125 @@ if __name__ == '__main__':
     thresholds = [i / float(1000) for i in range(1, 1000, 1)]  # define the number of threshold
     times = 10  # define the repeated times 
 
+    if args.adv:
+        num_instances = 500
+
     if args.d == "mnist":
-        (x_train, y_train), (x_test, y_test) = mnist.load_data()
-        x_train = x_train.reshape(-1, 28, 28, 1)
-        x_test = x_test.reshape(-1, 28, 28, 1)
+        if args.adv:            
+            path_adv = './adv/adv_mnist.npy'
+            x_adv = np.load(path_adv)
 
-        x_train = x_train.astype("float32")
-        x_train = (x_train / 255.0) - (1.0 - CLIP_MAX)
-        x_test = x_test.astype("float32")
-        x_test = (x_test / 255.0) - (1.0 - CLIP_MAX)
+            (x_train, y_train), (x_test, y_test) = mnist.load_data()
+            # number of class
+            num_class = 10            
+            y_test = utils.to_categorical(y_test, num_class)
 
-        # number of class
-        num_class = 10
-        y_train = utils.to_categorical(y_train, num_class)
-        y_test = utils.to_categorical(y_test, num_class)
+            # Load pre-trained model.        
+            model = load_model('./model_tracking/model_improvement-04-0.99_mnist.h5')
+            model.summary()
+            y_pred_adv = model.predict(x_adv)
 
-        # Load pre-trained model.        
-        model = load_model('./model_tracking/model_improvement-04-0.99_mnist.h5')
-        model.summary()
-        y_pred = model.predict(x_test)
+            if args.lsa:
+                score_path_file = './sa/lsa_adversarial_mnist.txt'
+                type_sa = 'lsa'
+            
+            if args.dsa:
+                score_path_file = './sa/dsa_adversarial_mnist.txt'
+                type_sa = 'dsa'
+            
+            sa_score = normalize_sa(load_file(score_path_file))
 
-        if args.lsa:
-            score_path_file = './sa/lsa_mnist.txt'
-            type_sa = 'lsa'
-        
-        if args.dsa:
-            score_path_file = './sa/dsa_mnist.txt'
-            type_sa = 'dsa'
+            values_threshold, values_perfs = find_best_threshold_advesarial(y_score=sa_score, y_pred=y_pred_adv, y_true=y_test, thresholds=thresholds, times=times, num_instances=num_instances)
+            print(values_threshold)
+            print(values_perfs)
 
-        sa_score = normalize_sa(load_file(score_path_file))
-        values_threshold, values_perfs = find_best_threshold(y_score=sa_score, y_pred=y_pred, y_true=y_test, thresholds=thresholds, times=times)
-        print(values_threshold)
-        print(values_perfs)
+        else:
+            (x_train, y_train), (x_test, y_test) = mnist.load_data()
+            x_train = x_train.reshape(-1, 28, 28, 1)
+            x_test = x_test.reshape(-1, 28, 28, 1)
+
+            x_train = x_train.astype("float32")
+            x_train = (x_train / 255.0) - (1.0 - CLIP_MAX)
+            x_test = x_test.astype("float32")
+            x_test = (x_test / 255.0) - (1.0 - CLIP_MAX)
+
+            # number of class
+            num_class = 10
+            y_train = utils.to_categorical(y_train, num_class)
+            y_test = utils.to_categorical(y_test, num_class)
+
+            # Load pre-trained model.        
+            model = load_model('./model_tracking/model_improvement-04-0.99_mnist.h5')
+            model.summary()
+            y_pred = model.predict(x_test)
+
+            if args.lsa:
+                score_path_file = './sa/lsa_mnist.txt'
+                type_sa = 'lsa'
+            
+            if args.dsa:
+                score_path_file = './sa/dsa_mnist.txt'
+                type_sa = 'dsa'
+
+            sa_score = normalize_sa(load_file(score_path_file))
+            values_threshold, values_perfs = find_best_threshold(y_score=sa_score, y_pred=y_pred, y_true=y_test, thresholds=thresholds, times=times)
+            print(values_threshold)
+            print(values_perfs)
 
     if args.d == 'cifar':
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+        if args.adv:            
+            path_adv = './adv/adv_cifar.npy'
+            x_adv = np.load(path_adv)
 
-        x_train = x_train.astype("float32")
-        x_train = (x_train / 255.0) - (1.0 - CLIP_MAX)
-        x_test = x_test.astype("float32")
-        x_test = (x_test / 255.0) - (1.0 - CLIP_MAX)
+            (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+            # number of class
+            num_class = 10            
+            y_test = utils.to_categorical(y_test, num_class)
 
-        # number of class
-        num_class = 10
-        y_train = utils.to_categorical(y_train, num_class)
-        y_test = utils.to_categorical(y_test, num_class)
+            # Load pre-trained model.        
+            model = load_model('./model_tracking/cifar_model_improvement-496-0.87.h5')
+            model.summary()
+            y_pred_adv = model.predict(x_adv)
 
-        model = load_model('./model_tracking/cifar_model_improvement-496-0.87.h5')
-        model.summary()
-        y_pred = model.predict(x_test)
+            if args.lsa:
+                score_path_file = './sa/lsa_adversarial_cifar.txt'
+                type_sa = 'lsa'
+            
+            if args.dsa:
+                score_path_file = './sa/dsa_adversarial_cifar.txt'
+                type_sa = 'dsa'
+            
+            sa_score = normalize_sa(load_file(score_path_file))
+            values_threshold, values_perfs = find_best_threshold_advesarial(y_score=sa_score, y_pred=y_pred_adv, y_true=y_test, thresholds=thresholds, times=times, num_instances=num_instances)
+            print(values_threshold)
+            print(values_perfs)
 
-        if args.lsa:
-            score_path_file = './sa/lsa_cifar.txt'
-            type_sa = 'lsa'
-        
-        if args.dsa:
-            score_path_file = './sa/dsa_cifar.txt'
-            type_sa = 'dsa'
+        else:
+            (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
-        sa_score = normalize_sa(load_file(score_path_file))
-        values_threshold, values_perfs = find_best_threshold(y_score=sa_score, y_pred=y_pred, y_true=y_test, thresholds=thresholds, times=times)
-        print(values_threshold)
-        print(values_perfs)
+            x_train = x_train.astype("float32")
+            x_train = (x_train / 255.0) - (1.0 - CLIP_MAX)
+            x_test = x_test.astype("float32")
+            x_test = (x_test / 255.0) - (1.0 - CLIP_MAX)
+
+            # number of class
+            num_class = 10
+            y_train = utils.to_categorical(y_train, num_class)
+            y_test = utils.to_categorical(y_test, num_class)
+
+            model = load_model('./model_tracking/cifar_model_improvement-496-0.87.h5')
+            model.summary()
+            y_pred = model.predict(x_test)
+
+            if args.lsa:
+                score_path_file = './sa/lsa_cifar.txt'
+                type_sa = 'lsa'
+            
+            if args.dsa:
+                score_path_file = './sa/dsa_cifar.txt'
+                type_sa = 'dsa'
+
+            sa_score = normalize_sa(load_file(score_path_file))
+            values_threshold, values_perfs = find_best_threshold(y_score=sa_score, y_pred=y_pred, y_true=y_test, thresholds=thresholds, times=times)
+            print(values_threshold)
+            print(values_perfs)
