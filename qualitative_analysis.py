@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
         y_pred = model.predict(x_test_normalize)
         correct, incorrect = mnist_get_correct_and_incorrect_test_images(y_pred=y_pred, y_true=y_test)
-        print(len(correct), len(incorrect), len(correct + incorrect))        
+        print(len(correct), len(incorrect), len(correct + incorrect))
         incorrect_info = list()
 
         # for index in incorrect:

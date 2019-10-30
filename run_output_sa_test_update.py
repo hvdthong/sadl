@@ -75,19 +75,13 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    assert args.d in ["mnist", "cifar"], "Dataset should be either 'mnist' or 'cifar'"    
+    assert args.d in ["mnist", "cifar"], "Dataset should be either 'mnist' or 'cifar'"  
     assert args.lsa ^ args.dsa, "Select either 'lsa' or 'dsa'"
 
     if args.d == 'cifar':
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         model = load_model('./model_tracking/cifar_model_improvement-496-0.87.h5')
         model.summary()
-
-        stringlist = []
-        model.summary(print_fn=lambda x: stringlist.append(x))
-        short_model_summary = "\n".join(stringlist)
-        print(short_model_summary)                
-
 
     x_train = x_train.astype("float32")
     x_train = (x_train / 255.0) - (1.0 - CLIP_MAX)
