@@ -21,13 +21,15 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     assert args.d in ["mnist", "cifar"], "Dataset should be either 'mnist' or 'cifar'"
-    dict_color_correct = {0: 'bisque', 1: 'silver', 2: 'lightcoral', 3: 'sandybrown', 
+
+    if args.d == 'cifar':
+        dict_color_correct = {0: 'bisque', 1: 'silver', 2: 'lightcoral', 3: 'sandybrown', 
         4: 'khaki', 5: 'darkkhaki', 6: 'palegreen', 7: 'lightcyan', 8: 'skyblue', 9: 'cornflowerblue'}
 
-    dict_incolor_correct = {0: 'tab:orange', 1: 'gray', 2: 'brown', 3: 'peru', 
-        4: 'gold', 5: 'olive', 6: 'forestgreen', 7: 'lightseagreen', 8: 'steelblue', 9: 'royalblue'}
-    dict_label = {0:'airplane', 1:'automobile', 2:'bird', 3:'cat', 4:'deer', 5:'dog', 6:'frog', 7:'horse', 8:'ship', 9:'truck'}
-    if args.d == 'cifar':
+        dict_incolor_correct = {0: 'tab:orange', 1: 'gray', 2: 'brown', 3: 'peru', 
+            4: 'gold', 5: 'olive', 6: 'forestgreen', 7: 'lightseagreen', 8: 'steelblue', 9: 'royalblue'}
+        dict_label = {0:'airplane', 1:'automobile', 2:'bird', 3:'cat', 4:'deer', 5:'dog', 6:'frog', 7:'horse', 8:'ship', 9:'truck'}
+
         # (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
         # x_train = x_train.astype("float32")
