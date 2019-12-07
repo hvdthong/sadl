@@ -106,15 +106,15 @@ def train(args):
     )
 
     # checkpoint
-    filepath= "./model_tracking/%s_model_improvement-{epoch:02d}-{val_acc:.2f}.h5" % (args.d)
-    checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    filepath= "./model_tracking/%s_model_improvement-{epoch:02d}-{val_accuracy:.2f}.h5" % (args.d)
+    checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
     callbacks_list = [checkpoint]
 
     model.fit(
         x_train,
         y_train,
         epochs=500,
-        batch_size=64,
+        batch_size=32,
         shuffle=True,
         verbose=1,
         validation_data=(x_test, y_test),

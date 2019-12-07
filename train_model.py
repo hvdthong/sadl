@@ -83,7 +83,7 @@ def train(args):
     )
 
     # checkpoint
-    filepath= "./model_tracking/model_improvement-{epoch:02d}-{val_acc:.2f}_%s.h5" % (args.d)
+    filepath= "./model_tracking/%s_model_improvement-{epoch:02d}-{val_acc:.2f}.h5" % (args.d)
     checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
     callbacks_list = [checkpoint]
 
@@ -91,7 +91,7 @@ def train(args):
         x_train,
         y_train,
         epochs=500,
-        batch_size=128,
+        batch_size=32,
         shuffle=True,
         verbose=0,
         validation_data=(x_test, y_test),
